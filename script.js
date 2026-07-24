@@ -148,7 +148,7 @@ function generateProblem() {
     clearAllBtn.disabled = false;
 
     updateDisplay();
-    setFeedback('Try to solve it.', '');
+    setFeedback('Try to solve it', '');
     problemBox.classList.remove('shake', 'pop');
     void problemBox.offsetWidth;
     problemBox.classList.add('pop');
