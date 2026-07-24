@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math For Kids – Interactive Tutorial</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="game-wrapper">
+        <div class="game-container">
+
+            <!-- Header: logo left, score right -->
+            <header class="header">
+                <div class="title-group">
+                    <img src="logo.png" alt="Math logo" class="emoji-img emoji-big" />
+                    <h1>Math <span>For Kids</span></h1>
+                </div>
+                <div class="score-box">
+                    <span class="score-label"><img src="star.png" alt="Star" class="score-icon" /> Score</span>
+                    <span class="score-number" id="scoreDisplay">0</span>
+                </div>
+            </header>
+
+            <!-- Operator selection -->
+            <section class="ops-section">
+                <p class="ops-label">Choose an operation:</p>
+                <div class="ops-buttons" id="opsButtons">
+                    <button class="op-btn active" data-op="+"><img src="plus.png" alt="Add" class="op-icon" /> Add</button>
+                    <button class="op-btn" data-op="−"><img src="minus.png" alt="Subtract" class="op-icon" /> Sub</button>
+                    <button class="op-btn" data-op="×"><img src="multiplication.png" alt="Multiply" class="op-icon" /> Mul</button>
+                    <button class="op-btn" data-op="÷"><img src="division.png" alt="Divide" class="op-icon" /> Div</button>
+                    <button class="op-btn" data-op="random"><img src="die.png" alt="Random" class="op-icon" /> Random</button>
+                </div>
+            </section>
+
+            <!-- Difficulty selection (Easy active by default) -->
+            <section class="difficulty-section">
+                <p class="difficulty-label">Difficulty:</p>
+                <div class="difficulty-buttons" id="difficultyButtons">
+                    <button class="diff-btn active" data-diff="easy">Easy</button>
+                    <button class="diff-btn" data-diff="normal">Normal</button>
+                    <button class="diff-btn" data-diff="hard">Hard</button>
+                </div>
+            </section>
+
+            <!-- Problem display (green chalkboard with brown frame) -->
+            <section class="problem-section" id="problemSection">
+                <div class="problem-box" id="problemBox">
+                    <span class="problem-number" id="num1Display">8</span>
+                    <span class="problem-operator" id="operatorDisplay">+</span>
+                    <span class="problem-number" id="num2Display">3</span>
+                    <span class="problem-equals">=</span>
+                    <span class="problem-input" id="inputDisplay">?</span>
+                </div>
+                <div class="feedback-area" id="feedback">
+                    <span class="feedback-text"><img src="sparkles.png" alt="Sparkles" class="feedback-icon" /> Press GENERATE to start!</span>
+                </div>
+            </section>
+
+            <!-- Action buttons -->
+            <section class="actions">
+                <button class="action-btn btn-clear-all" id="clearAllBtn">✕ Clear</button>
+                <button class="action-btn btn-check" id="checkBtn">✔ Check</button>
+                <button class="action-btn btn-generate" id="generateBtn"><img src="sparkles.png" alt="Sparkles" class="btn-icon" /> Generate</button>
+            </section>
+
+            <!-- Numpad -->
+            <section class="numpad-section">
+                <div class="numpad" id="numpad">
+                    <button class="num-btn" data-value="1">1</button>
+                    <button class="num-btn" data-value="2">2</button>
+                    <button class="num-btn" data-value="3">3</button>
+                    <button class="num-btn" data-value="4">4</button>
+                    <button class="num-btn" data-value="5">5</button>
+                    <button class="num-btn" data-value="6">6</button>
+                    <button class="num-btn" data-value="7">7</button>
+                    <button class="num-btn" data-value="8">8</button>
+                    <button class="num-btn" data-value="9">9</button>
+                    <button class="num-btn" data-value="0">0</button>
+                </div>
+            </section>
+
+        </div>
+    </div>
+
+    <!-- Popup overlay (green chalkboard with brown frame) -->
+    <div class="popup-overlay" id="popupOverlay">
+        <div class="popup-card" id="popupCard">
+            <div class="popup-icon" id="popupIcon">🎉</div>
+            <div class="popup-title" id="popupTitle">Correct!</div>
+            <div class="popup-detail" id="popupDetail">Great job! ⭐</div>
+            <button class="popup-btn" id="popupBtn">Next ➜</button>
+        </div>
+    </div>
+
+    <!-- Audio (optional) -->
+    <audio id="soundDing" preload="auto"><source src="ding.mp3" type="audio/mpeg"></audio>
+    <audio id="soundBuzz" preload="auto"><source src="buzz.mp3" type="audio/mpeg"></audio>
+    <audio id="soundPop" preload="auto"><source src="pop.mp3" type="audio/mpeg"></audio>
+
+    <script src="script.js"></script>
+</body>
+</html>
