@@ -60,10 +60,10 @@ function randomInteger(min, max) {
 // Mo return sa maximum nga number nga allowed para sa difficulty sa daka operation
 function getMaxNumber(operation) {
     const limits = {
-        '+': { easy: 5, normal: 10, hard: 12 },
-        '−': { easy: 5, normal: 10, hard: 12 },
-        '×': { easy: 3, normal: 6, hard: 10 },
-        '÷': { easy: 6, normal: 10, hard: 12 }
+        '+': { easy: 5, normal: 8, hard: 10 },
+        '−': { easy: 5, normal: 8, hard: 10 },
+        '×': { easy: 5, normal: 8, hard: 10 },
+        '÷': { easy: 6, normal: 8, hard: 10 }
     };
     return limits[operation]?.[chosenDifficulty] || 10;
 }
