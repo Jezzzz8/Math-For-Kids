@@ -1,127 +1,139 @@
-// script.js – Complete game logic with difficulty
-// --------------------------------------------------------------
-// CORE LOGIC: generateProblem() creates a new math problem
-// based on the selected operator and difficulty. It calculates
-// the correct answer and updates the display. checkAnswer()
-// compares the user's input with the correct answer.
-// --------------------------------------------------------------
+// GAME STATE (tanang importante nga datos)
+// Mga variable nga nag hold sa tanang data sa dula
+let firstNumber = 0;
+let secondNumber = 0;
+let currentOperator = '+';
+let expectedAnswer = 0;
+let userInput = '';
+let currentScore = 0;
+let isProblemAnswered = false;
+let chosenOperator = '+';
+let chosenDifficulty = 'easy';
+let previousProblem = null;
 
-// --- STATE ---
-let num1, num2, operator, correctAnswer;
-let currentInput = '';
-let score = 0;
-let isAnswered = false;
-let selectedOperator = '+';
-let selectedDifficulty = 'easy';
-let lastProblem = null;
-
-// --- DOM REFS ---
-const num1Display = document.getElementById('num1Display');
-const num2Display = document.getElementById('num2Display');
-const operatorDisplay = document.getElementById('operatorDisplay');
-const inputDisplay = document.getElementById('inputDisplay');
-const feedback = document.getElementById('feedback');
+// DOM ELEMENTS (mga parts sa page nga gigamit)
+// Mao ni ang elements sa webpage nga gigamit
+const displayFirstNum = document.getElementById('num1Display');
+const displaySecondNum = document.getElementById('num2Display');
+const displayOperator = document.getElementById('operatorDisplay');
+const displayInput = document.getElementById('inputDisplay');
+const feedbackArea = document.getElementById('feedback');
 const scoreDisplay = document.getElementById('scoreDisplay');
 const problemBox = document.getElementById('problemBox');
+
+// Buttons
 const checkBtn = document.getElementById('checkBtn');
 const generateBtn = document.getElementById('generateBtn');
-const clearAllBtn = document.getElementById('clearAllBtn');
-const opsButtons = document.querySelectorAll('.op-btn');
-const diffButtons = document.querySelectorAll('.diff-btn');
+const clearBtn = document.getElementById('clearAllBtn');
+
+// Operator & difficulty buttons
+const operatorButtons = document.querySelectorAll('.op-btn');
+const difficultyButtons = document.querySelectorAll('.diff-btn');
+
+// Popup elements
 const popupOverlay = document.getElementById('popupOverlay');
 const popupCard = document.getElementById('popupCard');
 const popupIcon = document.getElementById('popupIcon');
 const popupTitle = document.getElementById('popupTitle');
 const popupDetail = document.getElementById('popupDetail');
-const popupBtn = document.getElementById('popupBtn');
+const popupActionBtn = document.getElementById('popupBtn');
 
-// --- AUDIO (optional) ---
-const soundDing = document.getElementById('soundDing');
-const soundBuzz = document.getElementById('soundBuzz');
-const soundPop = document.getElementById('soundPop');
+// AUDIO (optional ra ni)
+// Mga sound effects para sa correct, wrong, ug popup
+const soundCorrect = document.getElementById('soundDing');
+const soundWrong = document.getElementById('soundBuzz');
+const soundPopup = document.getElementById('soundPop');
 
-function playSound(audio) {
-    if (audio) {
-        audio.currentTime = 0;
-        audio.play().catch(() => {});
+function playSound(audioElement) {
+    if (audioElement) {
+        audioElement.currentTime = 0;
+        audioElement.play().catch(() => {});
     }
 }
 
-// --- HELPERS ---
-function randomInt(min, max) {
+// HELPER FUNCTIONS
+// Mga functions para sa random numbers ug sa pag kuha sa maximum nga number
+function randomInteger(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-// Get number range based on difficulty
-function getRange(op) {
-    const ranges = {
-        '+': { easy: 5, normal: 10, hard: 15 },
-        '−': { easy: 5, normal: 10, hard: 15 },
-        '×': { easy: 5, normal: 10, hard: 12 },
-        '÷': { easy: 10, normal: 15, hard: 20 }
+// Mo return sa maximum nga number nga allowed para sa difficulty sa daka operation
+function getMaxNumber(operation) {
+    const limits = {
+        '+': { easy: 5, normal: 10, hard: 12 },
+        '−': { easy: 5, normal: 10, hard: 12 },
+        '×': { easy: 3, normal: 6, hard: 10 },
+        '÷': { easy: 6, normal: 10, hard: 12 }
     };
-    return ranges[op] || ranges['+'];
+    return limits[operation]?.[chosenDifficulty] || 10;
 }
 
-// --- GENERATE PROBLEM (core calculation) ---
+// GENERATE A NEW PROBLEM
+// kani ang function nga maghimo og bag o nga problem
 function generateProblem() {
-    let op = selectedOperator;
-    if (op === 'random') {
-        const ops = ['+', '−', '×', '÷'];
-        op = ops[randomInt(0, 3)];
+    // Decide which operation to use (if Random, pick one)
+    let operation = chosenOperator;
+    if (operation === 'random') {
+        const allOps = ['+', '−', '×', '÷'];
+        operation = allOps[randomInteger(0, 3)];
     }
 
-    const range = getRange(op);
-    const maxVal = range[selectedDifficulty] || 10;
-    let n1, n2, answer;
+    const maxVal = getMaxNumber(operation);
+    let num1, num2, answer;
     let attempts = 0;
+    let isValid = false;
 
-    // Loop to avoid repeating the exact same problem
+    // Keep trying until we get a valid problem (and avoid repeats)
     do {
-        n1 = 0;
-        n2 = 0;
+        num1 = 0;
+        num2 = 0;
         answer = 0;
-        let valid = false;
+        isValid = false;
 
-        switch (op) {
+        switch (operation) {
             case '+':
-                n1 = randomInt(0, maxVal);
-                n2 = randomInt(0, maxVal);
-                answer = n1 + n2;
-                valid = true;
+                num1 = randomInteger(0, maxVal);
+                num2 = randomInteger(0, maxVal);
+                answer = num1 + num2;
+                isValid = true;
                 break;
 
             case '−':
-                n1 = randomInt(0, maxVal);
-                n2 = randomInt(0, maxVal);
-                if (n1 < n2) [n1, n2] = [n2, n1];
-                answer = n1 - n2;
-                valid = true;
+                num1 = randomInteger(0, maxVal);
+                num2 = randomInteger(0, maxVal);
+                // Make sure we don't get negative answers
+                if (num1 < num2) {
+                    [num1, num2] = [num2, num1];
+                }
+                answer = num1 - num2;
+                isValid = true;
                 break;
 
             case '×':
-                n1 = randomInt(0, maxVal);
-                n2 = randomInt(0, maxVal);
-                answer = n1 * n2;
-                valid = true;
+                num1 = randomInteger(0, maxVal);
+                num2 = randomInteger(0, maxVal);
+                answer = num1 * num2;
+                isValid = true;
                 break;
 
             case '÷':
-                let divisorMax = Math.min(maxVal, selectedDifficulty === 'hard' ? 15 : 10);
-                let multiplierMax;
+                // Division: num1 = num2 * multiplier, so answer = multiplier
+                const divisorLimit = Math.min(maxVal, chosenDifficulty === 'hard' ? 15 : 10);
                 let multiplier;
-                while (!valid) {
-                    n2 = randomInt(1, divisorMax);
-                    multiplierMax = Math.floor(maxVal / n2);
+                let multiplierMax;
+                while (!isValid) {
+                    num2 = randomInteger(1, divisorLimit);
+                    multiplierMax = Math.floor(maxVal / num2);
                     if (multiplierMax >= 1) {
-                        if (multiplierMax > 1 && randomInt(1, 100) <= 70) {
-                            multiplier = randomInt(2, multiplierMax);
+                        // Avoid multiplier = 1 most of the time
+                        if (multiplierMax > 1 && randomInteger(1, 100) <= 70) {
+                            multiplier = randomInteger(2, multiplierMax);
                         } else {
-                            multiplier = randomInt(1, multiplierMax);
+                            multiplier = randomInteger(1, multiplierMax);
                         }
-                        n1 = n2 * multiplier;
+                        num1 = num2 * multiplier;
                         answer = multiplier;
-                        valid = true;
+                        isValid = true;
                     }
                 }
                 break;
@@ -129,195 +141,253 @@ function generateProblem() {
         attempts++;
     } while (
         attempts < 50 &&
-        lastProblem &&
-        lastProblem.num1 === n1 &&
-        lastProblem.num2 === n2 &&
-        lastProblem.operator === op
+        previousProblem &&
+        previousProblem.num1 === num1 &&
+        previousProblem.num2 === num2 &&
+        previousProblem.operator === operation
     );
 
-    lastProblem = { num1: n1, num2: n2, operator: op };
+    // Use this problem to avoid exact repetition next time
+    previousProblem = { num1, num2, operator: operation };
 
-    num1 = n1;
-    num2 = n2;
-    operator = op;
-    correctAnswer = answer;
-    currentInput = '';
-    isAnswered = false;
+    // Update the game state
+    firstNumber = num1;
+    secondNumber = num2;
+    currentOperator = operation;
+    expectedAnswer = answer;
+    userInput = '';
+    isProblemAnswered = false;
 
+    // Enable the check and clear buttons
     checkBtn.disabled = false;
-    clearAllBtn.disabled = false;
+    clearBtn.disabled = false;
 
+    // Refresh what's shown on screen
     updateDisplay();
-    setFeedback('Try to solve it', '');
-    problemBox.classList.remove('shake', 'pop');
-    void problemBox.offsetWidth;
-    problemBox.classList.add('pop');
-    setTimeout(() => problemBox.classList.remove('pop'), 250);
-
+    setFeedbackMessage('Try to solve it', '');
+    animateProblemBox('pop');
     closePopup();
 }
 
-// --- UPDATE DISPLAY ---
+// UPDATE THE SCREEN
+// Kani ang function nga mag-update sa display
 function updateDisplay() {
-    num1Display.textContent = num1;
-    num2Display.textContent = num2;
-    operatorDisplay.textContent = operator;
-    inputDisplay.textContent = currentInput === '' ? '?' : currentInput;
-    scoreDisplay.textContent = score;
+    displayFirstNum.textContent = firstNumber;
+    displaySecondNum.textContent = secondNumber;
+    displayOperator.textContent = currentOperator;
+    displayInput.textContent = userInput === '' ? '?' : userInput;
+    scoreDisplay.textContent = currentScore;
 }
 
-// --- FEEDBACK ---
-function setFeedback(message, type) {
-    const el = feedback.querySelector('.feedback-text') || document.createElement('span');
-    el.className = 'feedback-text';
-    if (type) el.classList.add(type);
-    el.innerHTML = message;
-    if (!feedback.querySelector('.feedback-text')) feedback.appendChild(el);
+// FEEDBACK MESSAGE
+// Kani nagbutang og feedback message sa ubos sa problem
+function setFeedbackMessage(message, type) {
+    let feedbackSpan = feedbackArea.querySelector('.feedback-text');
+    if (!feedbackSpan) {
+        feedbackSpan = document.createElement('span');
+        feedbackSpan.className = 'feedback-text';
+        feedbackArea.appendChild(feedbackSpan);
+    }
+    feedbackSpan.className = 'feedback-text' + (type ? ' ' + type : '');
+    feedbackSpan.innerHTML = message;
 }
 
-// --- POPUP ---
-function showPopup(type, title, detail, btnText, btnClass) {
-    const icons = {
+// ANIMATE THE PROBLEM BOX
+// Kani nag add og animation sa problem box (pop og shake animation)
+function animateProblemBox(animation) {
+    problemBox.classList.remove('shake', 'pop');
+    void problemBox.offsetWidth;
+    if (animation) {
+        problemBox.classList.add(animation);
+        setTimeout(() => problemBox.classList.remove(animation), 250);
+    }
+}
+
+// POPUP CONTROLS
+// Kani ang function para sa popup nga naay icon, title, details, ug button
+function showPopup(type, title, detail, buttonText, buttonClass) {
+    const iconMap = {
         correct: 'tada.png',
         wrong: 'sweat.png',
         info: 'wave.png'
     };
-    const titleClasses = { correct: 'correct-title', wrong: 'wrong-title', info: 'info-title' };
-    const cardClasses = { correct: 'correct', wrong: 'wrong', info: 'info' };
-    const btnClasses = { correct: 'correct-btn', wrong: 'wrong-btn', info: 'info-btn' };
+    const titleClassMap = {
+        correct: 'correct-title',
+        wrong: 'wrong-title',
+        info: 'info-title'
+    };
+    const cardClassMap = {
+        correct: 'correct',
+        wrong: 'wrong',
+        info: 'info'
+    };
+    const btnClassMap = {
+        correct: 'correct-btn',
+        wrong: 'wrong-btn',
+        info: 'info-btn'
+    };
 
-    const iconSrc = icons[type] || 'sparkles.png';
+    // Set icon as image
+    const iconSrc = iconMap[type] || 'sparkles.png';
     popupIcon.innerHTML = `<img src="${iconSrc}" alt="icon" class="popup-icon-img" />`;
 
     popupTitle.textContent = title || 'Hey!';
-    popupTitle.className = 'popup-title ' + (titleClasses[type] || '');
+    popupTitle.className = 'popup-title ' + (titleClassMap[type] || '');
     popupDetail.innerHTML = detail || '';
-    popupBtn.textContent = btnText || 'OK';
-    popupBtn.className = 'popup-btn ' + (btnClasses[type] || '');
-    popupCard.className = 'popup-card ' + (cardClasses[type] || '');
+    popupActionBtn.textContent = buttonText || 'OK';
+    popupActionBtn.className = 'popup-btn ' + (btnClassMap[type] || '');
+    popupCard.className = 'popup-card ' + (cardClassMap[type] || '');
 
     popupOverlay.classList.add('show');
-    setTimeout(() => popupBtn.focus(), 100);
-    playSound(soundPop);
+    setTimeout(() => popupActionBtn.focus(), 100);
+    playSound(soundPopup);
 }
 
 function closePopup() {
     popupOverlay.classList.remove('show');
 }
 
-// --- CHECK ANSWER (core comparison) ---
+// CHECK THE ANSWER
+// Kani ang function nga mag-check sa answer sa player
 function checkAnswer() {
-    if (isAnswered) return;
+    // If already answered, do nothing
+    if (isProblemAnswered) return;
 
-    if (currentInput === '') {
+    // If no input, show a friendly reminder
+    if (userInput === '') {
         showPopup('info', 'Wait!', 'Please enter a number!', 'OK', 'info');
         return;
     }
 
-    const userAnswer = parseInt(currentInput, 10);
-    if (isNaN(userAnswer)) {
+    const playerAnswer = parseInt(userInput, 10);
+    if (isNaN(playerAnswer)) {
         showPopup('info', 'Wait!', 'Please enter a valid number!', 'OK', 'info');
         return;
     }
 
-    clearAllBtn.disabled = true;
+    // Disable buttons to prevent double‑clicking
+    clearBtn.disabled = true;
     checkBtn.disabled = true;
-    isAnswered = true;
+    isProblemAnswered = true;
 
-    if (userAnswer === correctAnswer) {
-        score++;
+    // Compare with the correct answer
+    if (playerAnswer === expectedAnswer) {
+        // Correct!
+        currentScore++;
         updateDisplay();
         showPopup('correct', 'Correct!', 'Great job!', 'Next ➜', 'correct');
-        playSound(soundDing);
-        problemBox.classList.remove('shake');
-        problemBox.classList.add('pop');
-        setTimeout(() => problemBox.classList.remove('pop'), 250);
+        playSound(soundCorrect);
+        animateProblemBox('pop');
     } else {
-        score = Math.max(0, score - 1);
+        // Wrong!
+        currentScore = Math.max(0, currentScore - 1);
         updateDisplay();
         showPopup(
             'wrong',
             'Oops!',
-            `The right answer is <span class="highlight-answer">${correctAnswer}</span>`,
+            `The right answer is <span class="highlight-answer">${expectedAnswer}</span>`,
             'Try Again',
             'wrong'
         );
-        playSound(soundBuzz);
-        problemBox.classList.remove('pop');
-        problemBox.classList.add('shake');
-        setTimeout(() => problemBox.classList.remove('shake'), 350);
+        playSound(soundWrong);
+        animateProblemBox('shake');
     }
 }
 
-// --- NUMPAD INPUT ---
-function handleInput(value) {
-    if (isAnswered) return;
-    if (currentInput.length >= 6) return;
-    currentInput += value;
+// NUMPAD INPUT
+// Kani ang mga function ang para sa numpad ug sa keyboard
+function addDigit(digit) {
+    if (isProblemAnswered) return;
+    if (userInput.length >= 6) return;
+    userInput += digit;
     updateDisplay();
 }
 
 function clearInput() {
-    if (isAnswered) return;
-    currentInput = '';
+    if (isProblemAnswered) return;
+    userInput = '';
     updateDisplay();
-    const fb = feedback.querySelector('.feedback-text');
-    if (fb && fb.classList.contains('wrong')) {
-        setFeedback('✨ Input cleared. Try again!', '');
+    // Clear any previous wrong feedback
+    const feedbackSpan = feedbackArea.querySelector('.feedback-text');
+    if (feedbackSpan && feedbackSpan.classList.contains('wrong')) {
+        setFeedbackMessage('✨ Input cleared. Try again!', '');
     }
 }
 
-// --- SELECT OPERATOR / DIFFICULTY ---
-function selectOperator(op) {
-    selectedOperator = op;
-    opsButtons.forEach(btn => btn.classList.toggle('active', btn.dataset.op === op));
-    lastProblem = null;
+// CHANGE OPERATOR / DIFFICULTY
+// kani nga functions mag change sa operator or difficulty, unya maghimo dayun og bag o na problem
+function changeOperator(operation) {
+    chosenOperator = operation;
+    operatorButtons.forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.op === operation);
+    });
+    previousProblem = null;
     generateProblem();
 }
 
-function selectDifficulty(diff) {
-    selectedDifficulty = diff;
-    diffButtons.forEach(btn => btn.classList.toggle('active', btn.dataset.diff === diff));
-    lastProblem = null;
+function changeDifficulty(difficulty) {
+    chosenDifficulty = difficulty;
+    difficultyButtons.forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.diff === difficulty);
+    });
+    previousProblem = null;
     generateProblem();
 }
 
-// --- EVENT LISTENERS ---
-document.getElementById('numpad').addEventListener('click', (e) => {
-    const btn = e.target.closest('.num-btn');
-    if (btn) handleInput(btn.dataset.value);
+// EVENT LISTENERS
+// Mga event listeners para sa pag-click ug sa keyboard
+
+// Numpad clicks
+document.getElementById('numpad').addEventListener('click', (event) => {
+    const button = event.target.closest('.num-btn');
+    if (button) {
+        addDigit(button.dataset.value);
+    }
 });
 
-document.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' && popupOverlay.classList.contains('show')) {
-        e.preventDefault();
-        popupBtn.click();
+// Keyboard support
+document.addEventListener('keydown', (event) => {
+    // If popup is open, pressing Enter triggers the popup button
+    if (event.key === 'Enter' && popupOverlay.classList.contains('show')) {
+        event.preventDefault();
+        popupActionBtn.click();
         return;
     }
-    if (e.key >= '0' && e.key <= '9') {
-        e.preventDefault();
-        handleInput(e.key);
-    } else if (e.key === 'Backspace') {
-        e.preventDefault();
+
+    // Number keys (0‑9)
+    if (event.key >= '0' && event.key <= '9') {
+        event.preventDefault();
+        addDigit(event.key);
+    }
+    // Backspace clears input
+    else if (event.key === 'Backspace') {
+        event.preventDefault();
         clearInput();
-    } else if (e.key === 'Enter') {
-        e.preventDefault();
+    }
+    // Enter checks the answer
+    else if (event.key === 'Enter') {
+        event.preventDefault();
         checkAnswer();
     }
 });
 
-clearAllBtn.addEventListener('click', clearInput);
+// Button clicks
+clearBtn.addEventListener('click', clearInput);
 generateBtn.addEventListener('click', generateProblem);
 checkBtn.addEventListener('click', checkAnswer);
 
-opsButtons.forEach(btn => {
-    btn.addEventListener('click', () => selectOperator(btn.dataset.op));
-});
-diffButtons.forEach(btn => {
-    btn.addEventListener('click', () => selectDifficulty(btn.dataset.diff));
+// Operator buttons
+operatorButtons.forEach(btn => {
+    btn.addEventListener('click', () => changeOperator(btn.dataset.op));
 });
 
-popupBtn.addEventListener('click', () => {
+// Difficulty buttons
+difficultyButtons.forEach(btn => {
+    btn.addEventListener('click', () => changeDifficulty(btn.dataset.diff));
+});
+
+// Popup button – close popup and go to next problem (if correct/wrong)
+popupActionBtn.addEventListener('click', () => {
     const card = popupCard;
     if (card.classList.contains('correct') || card.classList.contains('wrong')) {
         closePopup();
@@ -327,12 +397,14 @@ popupBtn.addEventListener('click', () => {
     }
 });
 
-popupOverlay.addEventListener('click', (e) => {
-    if (e.target === popupOverlay && popupCard.classList.contains('info')) {
+// Click outside the popup to close it (only for info-type popups)
+popupOverlay.addEventListener('click', (event) => {
+    if (event.target === popupOverlay && popupCard.classList.contains('info')) {
         closePopup();
     }
 });
 
-// --- START with Easy difficulty ---
-selectOperator('+');
-selectDifficulty('easy');
+// START THE GAME
+// Pagstart sa dula: default kay Addition og Easy
+changeOperator('+');
+changeDifficulty('easy');
