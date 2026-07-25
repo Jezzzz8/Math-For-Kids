@@ -118,23 +118,32 @@ function generateProblem() {
 
             case '÷':
                 // Division: num1 = num2 * multiplier, so answer = multiplier
-                const divisorLimit = Math.min(maxVal, chosenDifficulty === 'hard' ? 15 : 10);
                 let multiplier;
                 let multiplierMax;
-                while (!isValid) {
-                    num2 = randomInteger(1, divisorLimit);
+                let attemptsDiv = 0;
+                while (!isValid && attemptsDiv < 30) {
+                    attemptsDiv++;
+                    num2 = randomInteger(1, maxVal);
                     multiplierMax = Math.floor(maxVal / num2);
                     if (multiplierMax >= 1) {
-                        // Avoid multiplier = 1 most of the time
-                        if (multiplierMax > 1 && randomInteger(1, 100) <= 70) {
-                            multiplier = randomInteger(2, multiplierMax);
-                        } else {
-                            multiplier = randomInteger(1, multiplierMax);
+                        let multiplierMin = 1;
+                        // If multiplierMax > 1, we prefer to pick from 2..multiplierMax with 85% chance
+                        if (multiplierMax > 1 && randomInteger(1, 100) <= 85) {
+                            multiplierMin = 2;
                         }
+                        multiplier = randomInteger(multiplierMin, multiplierMax);
                         num1 = num2 * multiplier;
                         answer = multiplier;
                         isValid = true;
                     }
+                }
+                // Fallback (very rare): if loop fails, pick num2=1 and any multiplier
+                if (!isValid) {
+                    num2 = 1;
+                    multiplier = randomInteger(1, maxVal);
+                    num1 = multiplier;
+                    answer = multiplier;
+                    isValid = true;
                 }
                 break;
         }
